@@ -5,9 +5,9 @@
 /// function or closure will result in an error. This is a bug, due to the closure being treated as
 /// `() -> T`, instead of `() -> [T]`.
 @_functionBuilder
-public struct ArrayBuilder {
+public struct ArrayBuilder<T> {
     
-    public static func buildBlock<T>(_ components: T...) -> [T] {
+    public static func buildBlock(_ components: T...) -> [T] {
         components
     }
 }

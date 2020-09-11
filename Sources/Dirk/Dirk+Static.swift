@@ -11,7 +11,7 @@ extension Dirk {
         return current
     }
     
-    public static func start(@ArrayBuilder _ builder: () -> [Module]) throws {
+    public static func start(@ArrayBuilder<Module> _ builder: () -> [Module]) throws {
         if current != nil {
             throw Exception.dirkAlreadyStarted
         }

@@ -3,7 +3,7 @@ public class Module {
     
     let providers: [Provider]
     
-    public init(@ArrayBuilder _ builder: () -> [Provider]) {
+    public init(@ArrayBuilder<Provider> _ builder: () -> [Provider]) {
         providers = builder()
     }
 }
