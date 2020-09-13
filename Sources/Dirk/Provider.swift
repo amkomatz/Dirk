@@ -3,5 +3,5 @@ public protocol Provider {
     
     var type: Any.Type { get }
     
-    func get() throws -> Any
+    func get(using dirk: Dirk) throws -> Any
 }

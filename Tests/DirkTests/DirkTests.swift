@@ -135,6 +135,22 @@ final class DirkTests: XCTestCase {
         XCTAssertTrue(model.value === object)
     }
     
+    func test_aProviderCanUseOtherProviders() throws {
+        let object = Object()
+        let model = Model<Object>()
+        try Dirk.start {
+            Module {
+                Singleton { object }
+                Factory { model }
+                Factory { try Model2<Object>(value: $0.get()) }
+            }
+        }
+        
+        let model2 = try Dirk.get().get(Model2<Object>.self)
+        
+        XCTAssertTrue(model2.value === object)
+    }
+    
     
     // MARK: - Static Members/Types
 
@@ -148,14 +164,23 @@ final class DirkTests: XCTestCase {
         ("test_aFactory_canBeInjectedIntoAProperty", test_aFactory_canBeInjectedIntoAProperty),
         ("test_aSingleton_canBeInjectedIntoAProperty", test_aSingleton_canBeInjectedIntoAProperty),
         ("test_injectedProperties_areInjectedLazily", test_injectedProperties_areInjectedLazily),
+        ("test_aProviderCanUseOtherProviders", test_aProviderCanUseOtherProviders),
     ]
     
-    private class Object: Interface {}
+    private class Object: Interface {
+        
+        let property: Int = 100
+    }
     
     private struct Model<T> {
         
         @Inject
         var value: T
+    }
+    
+    private struct Model2<T> {
+        
+        let value: T
     }
 }
 

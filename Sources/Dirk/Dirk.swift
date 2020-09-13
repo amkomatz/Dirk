@@ -14,7 +14,7 @@ public class Dirk {
             throw Exception.notRegistered(type)
         }
         
-        let _object = try provider.get()
+        let _object = try provider.get(using: self)
         
         guard let object = _object as? T else {
             throw Exception.incorrectType(expected: type, actual: Swift.type(of: _object))
