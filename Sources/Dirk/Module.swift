@@ -1,5 +1,5 @@
 
-public class Module {
+open class Module {
     
     let providers: [Provider]
     
