@@ -151,6 +151,24 @@ final class DirkTests: XCTestCase {
         XCTAssertTrue(model2.value === object)
     }
     
+    func test_twoNestedProvidersWithTheSameClassName_doNotConflict() throws {
+        struct ViewA {
+            class ViewModel {}
+        }
+        struct ViewB {
+            class ViewModel {}
+        }
+        try Dirk.start {
+            Module {
+                Factory { ViewA.ViewModel() }
+                Factory { ViewB.ViewModel() }
+            }
+        }
+        
+        _ = try Dirk.get().get(ViewA.ViewModel.self)
+        _ = try Dirk.get().get(ViewB.ViewModel.self)
+    }
+    
     
     // MARK: - Static Members/Types
 

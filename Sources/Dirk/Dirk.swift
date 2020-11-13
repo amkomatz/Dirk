@@ -5,12 +5,12 @@ public class Dirk {
     
     public func add(_ module: Module) {
         module.providers.forEach { provider in
-            map[String(describing: provider.type)] = provider
+            map[String(reflecting: provider.type)] = provider
         }
     }
     
     public func get<T>(_ type: T.Type = T.self) throws -> T {
-        guard let provider = map[String(describing: type)] else {
+        guard let provider = map[String(reflecting: type)] else {
             throw Exception.notRegistered(type)
         }
         
