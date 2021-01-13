@@ -1,7 +1,9 @@
 
+/// A provider that returns the same instance of `T` each time one is requested.
 public class Singleton<T>: Provider {
     
     public let type: Any.Type
+    
     private let builder: (Dirk) throws -> T
     private var calledBuilder: Bool = false
     private var value: T?
