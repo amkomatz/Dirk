@@ -40,7 +40,7 @@ try! Dirk.start {
 
 There are several methods to retrieve instances provided by Dirk:
 
-```
+```swift
 // 1. To inject a local variable (functions, computed properties, etc.)
 let viewModel: ViewModelA = try inject()
 let viewModel = try inject(ViewModelA.self)
@@ -126,11 +126,89 @@ Currently, no other providers have been implemented. However, recommendations ar
 
 ## Modularization
 
-A module is a lightweight grouping of providers
+A module is a lightweight grouping of providers. 
 
-Modules are a powerful way to organize dependencies, especially when dealing with frameworks.
+Modules are a powerful way to organize dependencies, especially when dealing with frameworks. For example,
+a module can be created for web services, view models, etc. When creating specific modules, subclassing is
+recommended:
+
+```swift
+// Create the module as a subclass of `Module`
+final class ViewModelModule: Module {
+    
+    init() {
+        super.init {
+            Factory { ViewModelA() }
+            Factory { ViewModelB() }
+            // ...
+        }
+    }
+}
+
+// Then register it by initializing the module
+try! Dirk.start {
+    ViewModelModule()
+    WebServiceModule()
+    // ...
+}
+```
+
+If your app uses frameworks, whether internal or third party, the same approach can be used:
+
+```swift
+final class FrameworkAModule: Module {
+    
+    init() {
+        super.init {
+            Factory { ObjectA() }
+            Factory { ObjectB() }
+            // ...
+        }
+    }
+}
+
+try! Dirk.start {
+    FrameworkAModule()
+    FrameworkBModule()
+    // ...
+}
+```
 
 ## Testing
+
+An enourmous benefit to using dependency injection is that testing becomes much easier. Because objects
+don't create their own dependencies, mocking is extremely simple. Just create a mock, and provide it to Dirk!
+
+```swift
+// Class definition
+final class ObjectA {
+
+    @Inject private var dependency: DependencyAProtocol
+    
+    // ...
+}
+
+// Create a mock of the dependency
+struct DependencyAMock: DependencyAProtocol {
+    
+    // ...
+}
+
+// In the tests for `ObjectA`, just inject the mock!
+func testSomeBehaviorOfObjectA() {
+    let mock = DependencyAMock()
+    
+    try! Dirk.start {
+        Module {
+            Factory<DependencyAProtocol> { mock }
+        }
+    }
+    
+    let object = ObjectA()
+    
+    // Execute the test!
+}
+```
 
 # Scenarios
 
