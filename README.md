@@ -11,6 +11,17 @@ reusability of code.
 
 # How to Use Dirk
 
+## Installation
+
+Dirk only supports Swift Package Manager for installation. Simply add the following dependency to your
+`Package.swift` file:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/amkomatz/Dirk", .upToNextMajor(from: "1.0.0"))
+]
+```
+
 ## Basic Use
 
 Using Dirk is extremely simple, but also allows for great flexibility.
@@ -209,7 +220,3 @@ func testSomeBehaviorOfObjectA() {
     // Execute the test!
 }
 ```
-
-# Scenarios
-
-## Dependency Carrying
