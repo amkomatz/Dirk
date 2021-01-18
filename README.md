@@ -18,7 +18,7 @@ Dirk only supports Swift Package Manager for installation. Simply add the follow
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/amkomatz/Dirk", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/amkomatz/Dirk", from: "1.0.0")
 ]
 ```
 
