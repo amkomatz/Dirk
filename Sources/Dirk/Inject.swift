@@ -8,9 +8,9 @@
 /// that if `Dirk` isn't started or a provider cannot be found, a runtime crash will occur.
 @propertyWrapper
 public class Inject<T> {
-    
-    public lazy var wrappedValue: T = try! inject()
-    
+
+    public private(set) lazy var wrappedValue: T = try! inject()
+
     public init() {}
 }
 

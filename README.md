@@ -66,6 +66,126 @@ classes and structs cannot handle errors. This means that if an instance cannot 
 occur. But as long as a provider is registered for the specific type, no runtime crash will occur. In most cases,
 method (2) is recommended.
 
+Dirk ships a small family of property wrappers that cover different injection styles. Pick the one
+that matches how the dependency should be used:
+
+| Wrapper             | Use when                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------ |
+| `@Inject`           | Standard case. Resolves lazily on first access and caches the value.                       |
+| `@Resolve`          | You want a fresh resolution from the container on every access.                            |
+| `@StateInject`      | The host is a SwiftUI `View` and the dependency is an `ObservableObject` driving the UI.   |
+| `@ObservableInject` | The host is an `ObservableObject` (e.g. view model) composing another `ObservableObject`.  |
+| `@ObservableChild`  | Same as `@ObservableInject`, but the child is constructed in place instead of resolved.    |
+
+## SwiftUI Integration
+
+Dirk includes three property wrappers for working with `ObservableObject`-based state. They are
+available on platforms that can import `SwiftUI` / `Combine`; on platforms that cannot (e.g.
+Linux), they compile out and the rest of Dirk continues to work as usual.
+
+### `@StateInject` — inject an `ObservableObject` into a `View`
+
+`StateInject` is the SwiftUI analogue of `Inject`. It resolves an `ObservableObject` from Dirk and
+subscribes the enclosing `View` to it, so the view re-renders when the model publishes a change.
+
+```swift
+final class HomeViewModel: ObservableObject {
+
+    @Published var title: String = "Hello"
+}
+
+try Dirk.start {
+    Module {
+        Factory { HomeViewModel() }
+    }
+}
+
+struct HomeView: View {
+
+    @StateInject var viewModel: HomeViewModel
+
+    var body: some View {
+        Text(viewModel.title)
+    }
+}
+```
+
+`StateInject` does **not** own the lifetime of the value — it behaves like `@ObservedObject`, not
+`@StateObject`. If you need the same instance across view recreations, register the type as a
+`Singleton`. For state that the view itself should own, use SwiftUI's built-in `@StateObject`.
+
+### `@ObservableInject` — inject a child `ObservableObject` into a parent `ObservableObject`
+
+When the host is itself an `ObservableObject` (e.g. a view model that composes smaller models),
+SwiftUI's `@ObservedObject` won't propagate the child's changes to the parent. `ObservableInject`
+resolves the child from Dirk and forwards its `objectWillChange` events to the parent, so any
+`View` observing the parent re-renders when the child mutates.
+
+```swift
+final class SessionStore: ObservableObject {
+
+    @Published var user: User?
+}
+
+final class HomeViewModel: ObservableObject {
+
+    @ObservableInject var session: SessionStore
+
+    var greeting: String { "Hello, \(session.user?.name ?? "guest")" }
+}
+```
+
+The enclosing type must be an `ObservableObject` whose `objectWillChange` is the default
+`ObservableObjectPublisher`. Providing a custom `objectWillChange` will silently disable change
+forwarding (the enclosing-instance subscript requires the default publisher type).
+
+### `@ObservableChild` — wrap a manually-constructed child `ObservableObject`
+
+`ObservableChild` is the non-injected sibling of `ObservableInject`. Use it when the child model
+isn't resolved from Dirk — for example, when it's built from inputs the parent already has, or
+when it's passed in by a caller. Change forwarding works the same way.
+
+```swift
+final class FormField: ObservableObject {
+
+    @Published var text: String = ""
+}
+
+final class SignUpViewModel: ObservableObject {
+
+    @ObservableChild var email = FormField()
+    @ObservableChild var password = FormField()
+
+    var isValid: Bool {
+        !email.text.isEmpty && password.text.count >= 8
+    }
+}
+```
+
+### `@Resolve` — fresh resolution on every access
+
+Unlike `Inject`, which caches the value after the first resolve, `Resolve` calls the registered
+provider on every access. Pair it with a `Factory` provider when each access should produce a new
+instance.
+
+```swift
+try Dirk.start {
+    Module {
+        Factory { RequestBuilder() }
+    }
+}
+
+struct APIClient {
+
+    @Resolve var builder: RequestBuilder
+
+    func send() {
+        let request = builder.build(...)
+        // ...
+    }
+}
+```
+
 ## Providers
 
 Providers come in several flavors, but they all have the same base functionality: to provide instances of a 
