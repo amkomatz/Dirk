@@ -38,9 +38,10 @@ import SwiftUI
 /// that if `Dirk` isn't started or a provider cannot be found, a runtime crash will occur.
 @propertyWrapper
 public class StateInject<T>: DynamicProperty where T: ObservableObject {
+    @StateObject public var wrappedValue: T
 
-    @ObservedObject public private(set) var wrappedValue: T = try! inject()
-
-    public init() {}
+    public init() {
+        _wrappedValue = StateObject(wrappedValue: try! inject())
+    }
 }
 #endif
